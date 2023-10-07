@@ -1,5 +1,5 @@
 import { updateClassComponent, updateFunctionComponent, updateHostComponent } from "./ReactFiberReconciler";
-import { isFn, isStr } from "./utils";
+import { Placement, isFn, isStr } from "./utils";
 
 let wip = null; // work in progress
 let wipRoot = null;
@@ -34,4 +34,37 @@ export function performUnitWork() {
     next = next.return;
   }
   wip = null;
+}
+
+function workLoop(IdleDeadline) {
+  while (wip && IdleDeadline.timeRemaining() > 0) {
+    performUnitWork();
+  }
+
+  if (!wip && wipRoot) {
+    commitRoot();
+  }
+}
+
+requestIdleCallback(workLoop);
+
+function commitRoot() {
+  commitWorker(wipRoot);
+  wipRoot = null;
+}
+
+function commitWorker(wip) {
+  if (!wip) return;
+  // 1 更新自己
+  const { flags, stateNode } = wip;
+
+  let parentNode = wip.return.stateNode;
+  if (flags && Placement && stateNode) {
+    parentNode.appendChild(stateNode);
+  }
+
+  // 2 更新子节点
+  commitWorker(wip.child);
+  // 3 更新兄弟节点
+  commitWorker(wip.sibling);
 }
