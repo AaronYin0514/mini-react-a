@@ -1,7 +1,13 @@
-import { updateClassComponent, updateFunctionComponent, updateHostComponent } from "./ReactReconciler";
+import { updateClassComponent, updateFunctionComponent, updateHostComponent } from "./ReactFiberReconciler";
 import { isFn, isStr } from "./utils";
 
 let wip = null; // work in progress
+let wipRoot = null;
+
+export function scheduleUpdateOnFiber(fiber) {
+  wip = fiber;
+  wipRoot = fiber;
+}
 
 export function performUnitWork() {
   // todo 1. 执行当前任务wip
