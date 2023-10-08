@@ -10,7 +10,27 @@ export function updateHostComponent(wip) {
   // 子节点
   reconcileChildren(wip, wip.props.children);
 }
- 
+
+export function updateFunctionComponent(wip) {
+  const { type, props } = wip;
+  const children = type(props);
+  reconcileChildren(wip, children);
+}
+
+export function updateClassComponent(wip) {
+  const { type, props } = wip;
+  const instance = new type(props);
+  const children = instance.render();
+  reconcileChildren(wip, children);
+}
+
+export function updateFragmentComponent() {}
+
+export function updateHostTextComponent() {
+  
+}
+
+// 协调（diff）
 function reconcileChildren(wip, children) {
   if (isStringOrNumber(children)) {
     return;
@@ -19,9 +39,13 @@ function reconcileChildren(wip, children) {
   let previousNewFiber = null; // 记录上一次的fiber
   for (let i = 0; i < newChildren.length; i++) {
     const newChild = newChildren[i];
+    if (newChild == null) {
+      continue;
+    }
     const newFiber = createFiber(newChild, wip);
 
-    if (i === 0) {
+    if (previousNewFiber === null) {
+      // head node
       wip.child = newFiber;
     } else {
       previousNewFiber.sibling = newFiber;
@@ -30,11 +54,3 @@ function reconcileChildren(wip, children) {
     previousNewFiber = newFiber;
   }
 }
-
-export function updateFunctionComponent() { }
-
-export function updateClassComponent() { }
-
-export function updateFragmentComponent() { }
-
-export function updateHostTextComponent() { }
