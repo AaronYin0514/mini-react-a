@@ -24,10 +24,12 @@ export function updateClassComponent(wip) {
   reconcileChildren(wip, children);
 }
 
-export function updateFragmentComponent() {}
+export function updateFragmentComponent(wip) {
+  reconcileChildren(wip, wip.props.children);
+}
 
-export function updateHostTextComponent() {
-  
+export function updateHostTextComponent(wip) {
+  wip.stateNode = document.createTextNode(wip.props.children);
 }
 
 // 协调（diff）

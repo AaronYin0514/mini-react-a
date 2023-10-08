@@ -20,16 +20,16 @@ class ClassComponent extends Component {
   }
 }
 
-// function FragmentComponent() {
-//   return (
-//     <ul>
-//       <React.Fragment>
-//         <li>part1</li>
-//         <li>part2</li>
-//       </React.Fragment>
-//     </ul>
-//   );
-// }
+function FragmentComponent() {
+  return (
+    <ul>
+      <>
+        <li>part1</li>
+        <li>part2</li>
+      </>
+    </ul>
+  );
+}
 
 const jsx = (
   <div className="border">
@@ -37,7 +37,7 @@ const jsx = (
     <a href="https://github.com/bubucuo/mini-react">mini react</a>
     <FunctionComponent name="函数组件" />
     <ClassComponent name="类组件" />
-    {/* <FragmentComponent /> */}
+    <FragmentComponent />
   </div>
 );
 
