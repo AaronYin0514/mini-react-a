@@ -24,12 +24,30 @@ export function isUndefined(un) {
   return un === undefined;
 }
 
-export function updateNode(node, nextVal) {
+export function updateNode(node, prevVal, nextVal) {
+  Object.keys(prevVal).forEach(k => {
+    if (k === 'children') {
+      if (isStringOrNumber(nextVal[k])) {
+        node.textContent = nextVal[k] + "";
+      }
+    } else if (k.slice(0, 2) === 'on') {
+      const eventName = k.slice(2).toLocaleLowerCase();
+      node.removeEventListener(eventName, prevVal[k]);
+    } else {
+      if (!(k in nextVal)) {
+        node[k] = '';
+      }
+    }
+  })
+
   Object.keys(nextVal).forEach((k) => {
     if (k === "children") {
       if (isStringOrNumber(nextVal[k])) {
         node.textContent = nextVal[k] + "";
       }
+    } else if (k.slice(0, 2) === 'on') {
+      const eventName = k.slice(2).toLocaleLowerCase();
+      node.addEventListener(eventName, nextVal[k]);
     } else {
       node[k] = nextVal[k];
     }
