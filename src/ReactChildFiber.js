@@ -10,21 +10,29 @@ function deleteChild(returnFiber, childToDelete) {
   }
 }
 
+function deleteRemainingChildren(returnFiber, currentFirstChild) {
+  let childToDelete = currentFirstChild;
+  while (childToDelete) {
+    deleteChild(returnFiber, childToDelete);
+    childToDelete = childToDelete.sibling;
+  }
+}
+
 // 协调（diff）
-export function reconcileChildren(wip, children) {
+export function reconcileChildren(returnFiber, children) {
   if (isStringOrNumber(children)) {
     return;
   }
   const newChildren = isArray(children) ? children : [children];
   // oldfiber的头结点
-  let oldFiber = wip.alternate?.child;
+  let oldFiber = returnFiber.alternate?.child;
   let previousNewFiber = null; // 记录上一次的fiber
   for (let i = 0; i < newChildren.length; i++) {
     const newChild = newChildren[i];
     if (newChild == null) {
       continue;
     }
-    const newFiber = createFiber(newChild, wip);
+    const newFiber = createFiber(newChild, returnFiber);
     const same = sameNode(oldFiber, newFiber);
 
     if (same) {
@@ -37,7 +45,7 @@ export function reconcileChildren(wip, children) {
 
     if (!same && oldFiber) {
       // 删除节点
-      deleteChild(wip, oldFiber);
+      deleteChild(returnFiber, oldFiber);
     }
 
     if (oldFiber) {
@@ -46,13 +54,14 @@ export function reconcileChildren(wip, children) {
 
     if (previousNewFiber === null) {
       // head node
-      wip.child = newFiber;
+      returnFiber.child = newFiber;
     } else {
       previousNewFiber.sibling = newFiber;
     }
 
     previousNewFiber = newFiber;
   }
+  deleteRemainingChildren(returnFiber, oldFiber);
 }
 
 // 节点复用的条件：1. 同一层级下 2. 类型相同 3. key相同
