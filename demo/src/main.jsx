@@ -39,8 +39,8 @@ const jsx = (
     <h1>react1</h1>
     <a href="https://github.com/bubucuo/mini-react">mini react</a>
     <FunctionComponent name="函数组件" />
-    {/* <ClassComponent name="类组件" />
-    <FragmentComponent /> */}
+    <ClassComponent name="类组件" />
+    <FragmentComponent />
   </div>
 );
 

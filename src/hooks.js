@@ -34,7 +34,7 @@ function updateWorkInProgressHook() {
     hook = {
       memorizedState: null, // state effect
       next: null, // 下一个hook
-    }
+    };
     if (workInProgressHook) {
       workInProgressHook = workInProgressHook.next = hook;
     } else {
@@ -53,11 +53,18 @@ export function useReducer(reducer, initalState) {
     hook.memorizedState = initalState;
   }
 
-  const dispatch = () => {
-    console.log('log')
-    hook.memorizedState = reducer(hook.memorizedState);
-    currentlyRenderingFiber.alternate = { ...currentlyRenderingFiber };
-    scheduleUpdateOnFiber(currentlyRenderingFiber);
-  }
-  return [hook.memorizedState, dispatch]
+  const dispatch = dispatchReducerAction.bind(
+    null,
+    currentlyRenderingFiber,
+    hook,
+    reducer
+  );
+  return [hook.memorizedState, dispatch];
+}
+
+function dispatchReducerAction(fiber, hook, reducer, action) {
+  hook.memorizedState = reducer ? reducer(hook.memorizedState) : action;
+  fiber.alternate = { ...fiber };
+  fiber.sibling = null;
+  scheduleUpdateOnFiber(fiber);
 }
