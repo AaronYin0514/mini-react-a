@@ -34,6 +34,15 @@ export function updateHostTextComponent(wip) {
   wip.stateNode = document.createTextNode(wip.props.children);
 }
 
+function deleteChild(returnFiber, childToDelete) {
+  const deletions = returnFiber.deletions;
+  if (deletions) {
+    deletions.push(childToDelete);
+  } else {
+    returnFiber.deletions = [childToDelete];
+  }
+}
+
 // 协调（diff）
 function reconcileChildren(wip, children) {
   if (isStringOrNumber(children)) {
@@ -57,6 +66,11 @@ function reconcileChildren(wip, children) {
         alternate: oldFiber,
         flags: Update
       })
+    }
+
+    if (!same && oldFiber) {
+      // 删除节点
+      deleteChild(wip, oldFiber);
     }
 
     if (oldFiber) {

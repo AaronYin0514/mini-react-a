@@ -99,6 +99,11 @@ function commitWorker(wip) {
     updateNode(stateNode, wip.alternate.props, wip.props);
   }
 
+  if (wip.deletions) {
+    // 删除wip子节点
+    commitDeletion(wip.deletions, stateNode || parentNode);
+  }
+
   // 2 更新子节点
   commitWorker(wip.child);
   // 3 更新兄弟节点
@@ -113,4 +118,18 @@ function getParentNode(wip) {
     }
     tem = tem.return;
   }
+}
+
+function commitDeletion(deletions, parentNode) {
+  for (let i = 0; i < deletions.length; i++) {
+    parentNode.removeChild(getStateNode(deletions[i]));
+  }
+}
+
+function getStateNode(fiber) {
+  let tem = fiber;
+  while (!tem.stateNode) {
+    tem = tem.child;
+  }
+  return tem.stateNode;
 }
