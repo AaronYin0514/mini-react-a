@@ -99,6 +99,10 @@ function commitWorker(wip) {
     updateNode(stateNode, wip.alternate.props, wip.props);
   }
 
+  if (wip.tag === FunctionComponent) {
+    invokeHooks(wip);
+  }
+
   // 2 更新子节点
   commitWorker(wip.child);
   // 3 更新兄弟节点
@@ -112,5 +116,22 @@ function getParentNode(wip) {
       return tem.stateNode;
     }
     tem = tem.return;
+  }
+}
+
+function invokeHooks(wip) {
+  const { updateQueueOfEffect, updateQueueOfLayout } = wip;
+
+  for (let i = 0; i < updateQueueOfLayout.length; i++) {
+    const effect = updateQueueOfLayout[i];
+    effect.create();
+  }
+
+  for (let i = 0; i < updateQueueOfEffect.length; i++) {
+    const effect = updateQueueOfEffect[i];
+
+    scheduleCallback(() => {
+      effect.create();
+    });
   }
 }

@@ -1,9 +1,32 @@
-import { ReactDOM, Component, useReducer, useState } from "../which-react";
+import {
+  ReactDOM,
+  Component,
+  useReducer,
+  useState,
+  useEffect,
+  useLayoutEffect,
+} from "../which-react";
 import "./index.css";
 
 function FunctionComponent(props) {
   const [count, setCount] = useReducer((x) => x + 1, 0);
   const [count2, setCount2] = useState(0);
+
+  useEffect(() => {
+    console.log("useEffect无依赖");
+  }, []);
+
+  useLayoutEffect(() => {
+    console.log("useLayoutEffect无依赖");
+  }, []);
+
+  useEffect(() => {
+    console.log("useEffect依赖count");
+  }, [count]);
+
+  useLayoutEffect(() => {
+    console.log("useLayoutEffect依赖count2");
+  }, [count2]);
 
   return (
     <div className="border">

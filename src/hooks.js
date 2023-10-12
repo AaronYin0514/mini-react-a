@@ -1,15 +1,21 @@
 import { scheduleUpdateOnFiber } from "./ReactFiberWorkLoop";
+import { areHookInputsEqual, HookLayout, HookPassive } from "./utils";
 
 let currentlyRenderingFiber = null;
 let workInProgressHook = null;
 
 // 老hook
-// let currentHook = null;
+let currentHook = null;
 
 export function renderWithHooks(wip) {
   currentlyRenderingFiber = wip;
   currentlyRenderingFiber.memorizedState = null;
   workInProgressHook = null;
+
+  // 为了方便，useEffect与useLayoutEffect区分开，并且以数组管理
+  // 源码中是放一起的，并且是个链表
+  currentlyRenderingFiber.updateQueueOfEffect = [];
+  currentlyRenderingFiber.updateQueueOfLayout = [];
 }
 
 function updateWorkInProgressHook() {
@@ -21,15 +27,15 @@ function updateWorkInProgressHook() {
     currentlyRenderingFiber.memorizedState = current.memorizedState;
     if (workInProgressHook) {
       workInProgressHook = hook = workInProgressHook.next;
-      // currentHook = currentHook.next;
+      currentHook = currentHook.next;
     } else {
       // hook0
       workInProgressHook = hook = currentlyRenderingFiber.memorizedState;
-      // currentHook = current.memorizedState;
+      currentHook = current.memorizedState;
     }
   } else {
     // 组件初次渲染
-    // currentHook = null;
+    currentHook = null;
 
     hook = {
       memorizedState: null, // state effect
@@ -71,4 +77,35 @@ function dispatchReducerAction(fiber, hook, reducer, action) {
   fiber.alternate = { ...fiber };
   fiber.sibling = null;
   scheduleUpdateOnFiber(fiber);
+}
+
+function updateEffectImp(hooksFlags, create, deps) {
+  const hook = updateWorkInProgressHook();
+
+  if (currentHook) {
+    const preEffect = currentHook.memorizedState;
+    if (deps) {
+      const prevDeps = preEffect.deps;
+      if (areHookInputsEqual(deps, prevDeps)) {
+        return;
+      }
+    }
+  }
+
+  const effect = { hooksFlags, create, deps };
+  hook.memorizedState = effect;
+
+  if (hooksFlags & HookPassive) {
+    currentlyRenderingFiber.updateQueueOfEffect.push(effect);
+  } else {
+    currentlyRenderingFiber.updateQueueOfLayout.push(effect);
+  }
+}
+
+export function useEffect(create, deps) {
+  return updateEffectImp(HookPassive, create, deps);
+}
+
+export function useLayoutEffect(create, deps) {
+  return updateEffectImp(HookLayout, create, deps);
 }
